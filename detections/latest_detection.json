@@ -1,18 +1,6 @@
 {
-  "timestamp": 1740913958987,
-  "detections": [
-    {
-      "class": "book",
-      "confidence": 0.2803492546081543,
-      "bbox": [
-        171.811767578125,
-        109.82318115234375,
-        1117.173095703125,
-        693.8405151367188
-      ],
-      "timestamp": 1740913958987
-    }
-  ],
-  "total_objects": 1,
-  "frame_id": "image0.jpg"
+  "timestamp": 1740915155529,
+  "detections": [],
+  "total_objects": 0,
+  "frame_id": "empty_frame"
 }
