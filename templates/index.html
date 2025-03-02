@@ -44,8 +44,14 @@
         header {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             margin-bottom: 24px;
             padding: 16px 0;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
         }
         
         .logo {
@@ -73,47 +79,63 @@
             font-weight: 400;
         }
         
+        .speech-status {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background-color: var(--background-subtle);
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            margin-right: 8px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .status-indicator.active {
+            background-color: var(--success-color);
+        }
+        
         .commands-bar {
             display: flex;
+            align-items: center;
+            justify-content: center;
             background-color: var(--background-light);
             border-radius: var(--border-radius);
             padding: 12px 20px;
             box-shadow: var(--shadow-soft);
             border: 1px solid var(--border-color);
             margin-bottom: 24px;
-            overflow-x: auto;
-            white-space: nowrap;
         }
         
         .commands-bar h3 {
             font-size: 14px;
             font-weight: 500;
             color: var(--text-secondary);
-            margin-right: 16px;
-            padding: 4px 0;
-        }
-        
-        .commands-list {
-            display: flex;
-            list-style-type: none;
-            gap: 20px;
+            margin-right: 12px;
         }
         
         .command-item {
             display: flex;
             align-items: center;
-            padding: 4px 0;
         }
         
         .command-name {
             color: var(--primary-color);
-            font-weight: 500;
-            margin-right: 6px;
+            font-weight: 600;
+            font-size: 18px;
+            margin-right: 8px;
         }
         
         .command-description {
             color: var(--text-secondary);
-            font-size: 13px;
+            font-size: 14px;
         }
         
         .main-content {
@@ -138,164 +160,47 @@
             display: block;
             object-fit: cover;
         }
-        
-        .card {
-            background-color: var(--background-light);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--shadow-soft);
-            border: 1px solid var(--border-color);
-        }
-        
-        .card h2 {
-            color: var(--text-primary);
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            letter-spacing: -0.3px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .status-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--text-secondary);
-            margin-right: 8px;
-            transition: background-color 0.3s ease;
-        }
-        
-        .status-indicator.active {
-            background-color: var(--success-color);
-        }
-        
-        .content-box {
-            background-color: var(--background-subtle);
-            border-radius: 8px;
-            padding: 16px;
-            min-height: 60px;
-            font-size: 15px;
-        }
-        
-        .objects-container {
-            overflow-x: auto;
-        }
-        
-        .object-list {
-            list-style-type: none;
-            padding: 0;
-            display: flex;
-            gap: 12px;
-            min-width: max-content;
-        }
-        
-        .object-item {
-            background-color: var(--background-subtle);
-            padding: 10px 16px;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 14px;
-            min-width: 120px;
-        }
-        
-        .object-class {
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-        
-        .object-confidence {
-            color: var(--text-secondary);
-            font-size: 12px;
-            font-weight: 400;
-        }
-        
-        .speech-input {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .speech-status {
-            display: flex;
-            align-items: center;
-            padding: 8px 12px;
-            background-color: var(--background-subtle);
-            border-radius: 20px;
-            font-size: 14px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <svg class="logo" width="50" height="50" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
-                <path d="M100 0h600v800H100V0z" fill="white"/>
-                <path d="M100 0h100v500c0 110-90 200-200 200v-200c55 0 100-45 100-100V0z" fill="#1D1D1F"/>
-                <path d="M700 0h-100v500c0 110 90 200 200 200v-200c-55 0-100-45-100-100V0z" fill="#1D1D1F"/>
-                <ellipse cx="250" cy="400" rx="70" ry="90" fill="#0066CC"/>
-                <ellipse cx="550" cy="400" rx="70" ry="90" fill="#0066CC"/>
-            </svg>
-            <div class="brand-text">
-                <h1>bino.dev</h1>
-                <p>lending you a pair of eyes</p>
+            <div class="header-left">
+                <svg class="logo" width="50" height="50" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M100 0h600v800H100V0z" fill="white"/>
+                    <path d="M100 0h100v500c0 110-90 200-200 200v-200c55 0 100-45 100-100V0z" fill="#1D1D1F"/>
+                    <path d="M700 0h-100v500c0 110 90 200 200 200v-200c-55 0-100-45-100-100V0z" fill="#1D1D1F"/>
+                    <ellipse cx="250" cy="400" rx="70" ry="90" fill="#0066CC"/>
+                    <ellipse cx="550" cy="400" rx="70" ry="90" fill="#0066CC"/>
+                </svg>
+                <div class="brand-text">
+                    <h1>bino.dev</h1>
+                    <p>lending you a pair of eyes</p>
+                </div>
+            </div>
+            <div class="speech-status">
+                <span class="status-indicator" id="listening-indicator"></span>
+                <span>Listening</span>
             </div>
         </header>
 
         <div class="commands-bar">
-            <h3>Voice Commands:</h3>
-            <ul class="commands-list">
-                <li class="command-item">
-                    <span class="command-name">"What is in front of me?"</span>
-                    <span class="command-description">List detected objects</span>
-                </li>
-                <li class="command-item">
-                    <span class="command-name">"Describe my surroundings"</span>
-                    <span class="command-description">Get a detailed description</span>
-                </li>
-                <li class="command-item">
-                    <span class="command-name">"Hello"</span>
-                    <span class="command-description">Greet the assistant</span>
-                </li>
-            </ul>
+            <h3>Voice Command:</h3>
+            <div class="command-item">
+                <span class="command-name">"detect"</span>
+                <span class="command-description">Announces detected objects</span>
+            </div>
         </div>
 
         <div class="main-content">
             <div class="video-container">
                 <img src="{{ url_for('video_feed') }}" class="video-feed" alt="Live Camera Feed">
             </div>
-
-            <div class="card">
-                <div class="speech-input">
-                    <div class="speech-status">
-                        <span class="status-indicator" id="listening-indicator"></span>
-                        <span>Listening</span>
-                    </div>
-                    <div class="content-box" id="response-text">Say "what is in front of me" or "describe my surroundings"</div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Detected Objects</h2>
-                <div class="objects-container">
-                    <ul class="object-list" id="object-list">
-                        <li class="object-item">
-                            <span class="object-class">No objects detected yet</span>
-                            <span class="object-confidence"></span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
         </div>
     </div>
-
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const responseText = document.getElementById('response-text');
-            const objectList = document.getElementById('object-list');
             const listeningIndicator = document.getElementById('listening-indicator');
             
             // Set initial state
@@ -304,63 +209,6 @@
             // Function to update UI with latest status
             function updateStatus() {
                 fetch('/api/status')
-                    .then(response => response.json())
-                    .then(data => {
-                        // Update response text
-                        if (data.response) {
-                            responseText.textContent = data.response;
-                        }
-                        
-                        // Update transcript if it exists
-                        if (data.transcript) {
-                            // We'll show the transcript in the response area as well
-                            // since we've removed the separate transcript box
-                            if (!data.response) {
-                                responseText.textContent = data.transcript;
-                            }
-                        }
-                        
-                        // Update object list
-                        if (data.objects && data.objects.length > 0) {
-                            objectList.innerHTML = '';
-                            
-                            // Group objects by class
-                            const objectCounts = {};
-                            data.objects.forEach(obj => {
-                                const objClass = obj.class || 'unknown';
-                                if (objectCounts[objClass]) {
-                                    objectCounts[objClass].count += 1;
-                                    objectCounts[objClass].confidence = Math.max(
-                                        objectCounts[objClass].confidence, 
-                                        obj.confidence || 0
-                                    );
-                                } else {
-                                    objectCounts[objClass] = {
-                                        count: 1,
-                                        confidence: obj.confidence || 0
-                                    };
-                                }
-                            });
-                            
-                            // Create list items
-                            for (const [objClass, data] of Object.entries(objectCounts)) {
-                                const li = document.createElement('li');
-                                li.className = 'object-item';
-                                
-                                const classSpan = document.createElement('span');
-                                classSpan.className = 'object-class';
-                                classSpan.textContent = `${data.count}× ${objClass}`;
-                                
-                                const confSpan = document.createElement('span');
-                                confSpan.className = 'object-confidence';
-                                confSpan.textContent = `${(data.confidence * 100).toFixed(0)}%`;
-                                
-                                li.appendChild(classSpan);
-                                li.appendChild(confSpan);
-                                objectList.appendChild(li);
-                            }
-                        }
-                    })
                     .catch(error => {
                         console.error('Error fetching status:', error);
                         listeningIndicator.classList.remove('active');
