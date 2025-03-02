@@ -2,7 +2,9 @@
 """
 YOLOv8 Object Detection for OVR Live Video Feed
 """
-
+import zmq
+import base64
+import time
 import cv2
 import numpy as np
 import time
@@ -186,7 +188,12 @@ def main():
     print(f"JSON export interval: {export_interval} seconds to {args.json_dir}/")
     
     # Main processing loop
+    # Modify the main loop to send frames without the delay
     try:
+        context = zmq.Context()
+        socket = context.socket(zmq.PUB)
+        socket.bind("tcp://*:5555")
+        
         while True:
             # Read frame from camera
             ret, frame = cap.read()
@@ -211,6 +218,11 @@ def main():
             
             # Draw detections on frame
             annotated_frame = draw_detections(frame, results)
+            
+            # Send the annotated frame through ZeroMQ (no need to wait a second)
+            _, buffer = cv2.imencode('.jpg', annotated_frame)
+            jpg_as_text = base64.b64encode(buffer).decode('utf-8')
+            socket.send_string(jpg_as_text)
             
             # Add performance info and export status
             time_until_next = max(0, export_interval - (current_time - last_export_time))
