@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vision Assistant</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        @media (min-width: 768px) {
+            .main-content {
+                flex-direction: row;
+            }
+        }
+        .video-container {
+            flex: 2;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .video-feed {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .interaction-panel {
+            flex: 1;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .speech-input, .assistant-response, .detected-objects {
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #3498db;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .input-text, .response-text {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 10px;
+            min-height: 60px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #e74c3c;
+            margin-right: 5px;
+        }
+        .status-indicator.active {
+            background-color: #2ecc71;
+        }
+        .object-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .object-item {
+            background-color: #f0f8ff;
+            margin-bottom: 5px;
+            padding: 5px 10px;
+            border-radius: 3px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .object-class {
+            font-weight: bold;
+        }
+        .object-confidence {
+            color: #7f8c8d;
+        }
+        .commands-list {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 20px;
+        }
+        .commands-list h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: #2c3e50;
+        }
+        .commands-list ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Vision Assistant</h1>
+            <p>A speech-enabled computer vision assistant</p>
+        </header>
+
+        <div class="main-content">
+            <div class="video-container">
+                <img src="{{ url_for('video_feed') }}" class="video-feed" alt="Live Camera Feed">
+            </div>
+
+            <div class="interaction-panel">
+                <div class="speech-input">
+                    <h2>
+                        <span class="status-indicator" id="listening-indicator"></span>
+                        Speech Input
+                    </h2>
+                    <div class="input-text" id="speech-text">Listening...</div>
+                </div>
+
+                <div class="assistant-response">
+                    <h2>Assistant Response</h2>
+                    <div class="response-text" id="response-text">Say "what is in front of me" or "describe my surroundings"</div>
+                </div>
+
+                <div class="detected-objects">
+                    <h2>Detected Objects</h2>
+                    <ul class="object-list" id="object-list">
+                        <li class="object-item">No objects detected yet</li>
+                    </ul>
+                </div>
+
+                <div class="commands-list">
+                    <h3>Available Commands:</h3>
+                    <ul>
+                        <li><strong>"What is in front of me?"</strong> - List detected objects</li>
+                        <li><strong>"Describe my surroundings"</strong> - Get a detailed description</li>
+                        <li><strong>"Hello"</strong> - Greet the assistant</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const speechText = document.getElementById('speech-text');
+            const responseText = document.getElementById('response-text');
+            const objectList = document.getElementById('object-list');
+            const listeningIndicator = document.getElementById('listening-indicator');
+            
+            // Set initial state
+            listeningIndicator.classList.add('active');
+            
+            // Function to update UI with latest status
+            function updateStatus() {
+                fetch('/api/status')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update speech text
+                        if (data.transcript) {
+                            speechText.textContent = data.transcript;
+                        }
+                        
+                        // Update response text
+                        if (data.response) {
+                            responseText.textContent = data.response;
+                        }
+                        
+                        // Update object list
+                        if (data.objects && data.objects.length > 0) {
+                            objectList.innerHTML = '';
+                            
+                            // Group objects by class
+                            const objectCounts = {};
+                            data.objects.forEach(obj => {
+                                const objClass = obj.class || 'unknown';
+                                if (objectCounts[objClass]) {
+                                    objectCounts[objClass].count += 1;
+                                    objectCounts[objClass].confidence = Math.max(
+                                        objectCounts[objClass].confidence, 
+                                        obj.confidence || 0
+                                    );
+                                } else {
+                                    objectCounts[objClass] = {
+                                        count: 1,
+                                        confidence: obj.confidence || 0
+                                    };
+                                }
+                            });
+                            
+                            // Create list items
+                            for (const [objClass, data] of Object.entries(objectCounts)) {
+                                const li = document.createElement('li');
+                                li.className = 'object-item';
+                                
+                                const classSpan = document.createElement('span');
+                                classSpan.className = 'object-class';
+                                classSpan.textContent = `${data.count}× ${objClass}`;
+                                
+                                const confSpan = document.createElement('span');
+                                confSpan.className = 'object-confidence';
+                                confSpan.textContent = `${(data.confidence * 100).toFixed(0)}%`;
+                                
+                                li.appendChild(classSpan);
+                                li.appendChild(confSpan);
+                                objectList.appendChild(li);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching status:', error);
+                        listeningIndicator.classList.remove('active');
+                    });
+            }
+            
+            // Update status every 1 second
+            setInterval(updateStatus, 1000);
+        });
+    </script>
+</body>
+</html>

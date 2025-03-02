@@ -1,5 +1,17 @@
+# Existing requirements
 ultralytics==8.0.145
 opencv-python==4.8.0.74
 numpy>=1.22.4
 pillow>=9.0.0
 PyObjC>=9.0.1  # For macOS camera access
+
+# New requirements for speech interface
+Flask==2.0.1
+SpeechRecognition==3.8.1
+pyttsx3==2.90
+pyaudio==0.2.13
+python-dotenv==0.19.1
+watchdog==2.1.6
+
+# Optional - for environment with OpenAI integration
+openai>=1.0.0
