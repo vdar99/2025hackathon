@@ -1,0 +1,18 @@
+{
+  "timestamp": 1740878732032,
+  "detections": [
+    {
+      "class": "fire hydrant",
+      "confidence": 0.5845804810523987,
+      "bbox": [
+        772.5196533203125,
+        241.74053955078125,
+        1059.9835205078125,
+        713.5028076171875
+      ],
+      "timestamp": 1740878732032
+    }
+  ],
+  "total_objects": 1,
+  "frame_id": "image0.jpg"
+}

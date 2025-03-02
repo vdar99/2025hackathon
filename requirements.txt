@@ -1,0 +1,5 @@
+ultralytics==8.0.145
+opencv-python==4.8.0.74
+numpy>=1.22.4
+pillow>=9.0.0
+PyObjC>=9.0.1  # For macOS camera access

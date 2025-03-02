@@ -1,0 +1,18 @@
+{
+  "timestamp": 1740878439131,
+  "detections": [
+    {
+      "class": "tennis racket",
+      "confidence": 0.42219194769859314,
+      "bbox": [
+        828.6802368164062,
+        365.6689453125,
+        1279.04443359375,
+        709.7392578125
+      ],
+      "timestamp": 1740878439131
+    }
+  ],
+  "total_objects": 1,
+  "frame_id": "image0.jpg"
+}

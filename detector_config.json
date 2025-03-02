@@ -1,0 +1,8 @@
+{
+    "model": "yolov8n.pt",
+    "confidence": 0.5,
+    "device": 1,
+    "save_output": false,
+    "output_path": "output.mp4",
+    "classes_of_interest": []
+}

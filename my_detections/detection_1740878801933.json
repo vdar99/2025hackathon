@@ -1,0 +1,18 @@
+{
+  "timestamp": 1740878801933,
+  "detections": [
+    {
+      "class": "laptop",
+      "confidence": 0.4253678619861603,
+      "bbox": [
+        1001.9241333007812,
+        603.088623046875,
+        1278.748779296875,
+        720.0
+      ],
+      "timestamp": 1740878801933
+    }
+  ],
+  "total_objects": 1,
+  "frame_id": "image0.jpg"
+}
