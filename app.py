@@ -42,7 +42,8 @@ openai_enabled = False
 
 # Initialize OpenAI if API key is available
 try:
-    openai.api_key = os.environ.get("OPENAI_API_KEY")
+    #openai.api_key = os.environ.get("OPENAI_API_KEY")
+    openai.api_key = "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"
     if openai.api_key:
         openai_enabled = True
         logger.info("OpenAI API key found. Description generation enabled.")
@@ -386,23 +387,129 @@ def zmq_frame_receiver():
     socket.close()
     context.term()
 
-def object_announcer_thread(json_dir):
+# def object_announcer_thread(json_dir):
+#     """
+#     Monitors a specific JSON detection file and announces the first detected object
+#     through audio output (Bluetooth headphones) every 5 seconds
+#     """
+#     global recognition_active
+    
+#     logger.info("Object announcer thread started")
+    
+#     # Fixed path to the latest detection file
+#     json_file_path = os.path.join(json_dir, "latest_detection.json")
+    
+#     # Time between announcements (5 seconds)
+#     announcement_interval = 3.0
+    
+#     # Function to play audio using platform-specific approaches that work with Bluetooth
+#     def speak_with_audio_device(text):
+#         logger.info(f"Speaking text: {text}")
+        
+#         # Determine platform
+#         if sys.platform == 'darwin':  # macOS
+#             # Use macOS's say command which respects system audio output settings
+#             os.system(f'say -v Alex "{text}"')
+#             return True
+#         elif sys.platform == 'win32':  # Windows
+#             try:
+#                 # Use Windows Speech API directly
+#                 import win32com.client
+#                 speaker = win32com.client.Dispatch("SAPI.SpVoice")
+#                 speaker.Speak(text)
+#                 return True
+#             except Exception as e:
+#                 logger.error(f"Windows TTS error: {e}")
+#                 return False
+#         else:  # Linux and others
+#             try:
+#                 # Try using espeak with explicit device if alsa is available
+#                 # First try default device
+#                 result = os.system(f'espeak -v en-us "{text}" --stdout | aplay')
+#                 if result != 0:
+#                     # If that fails, try with explicit device
+#                     os.system(f'espeak -v en-us "{text}" --stdout | aplay -D plughw:0,0')
+#                 return True
+#             except Exception as e:
+#                 logger.error(f"Linux TTS error: {e}")
+#                 return False
+    
+#     # Use one-time TTS engine to get system info and test audio
+#     try:
+#         # System startup announcement
+#         speak_with_audio_device("Vision assistant started. Audio system active.")
+#     except Exception as e:
+#         logger.error(f"Initial audio test failed: {e}")
+    
+#     # Main loop
+#     while recognition_active:
+#         try:
+#             # Check if file exists
+#             if os.path.exists(json_file_path):
+#                 # Read the JSON file
+#                 with open(json_file_path, 'r') as f:
+#                     data = json.load(f)
+                
+#                 # Get detections
+#                 detections = data.get("detections", [])
+                
+#                 if detections:
+#                     # Get class name of first object
+#                     first_object = detections[0].get("class", "unknown")
+                    
+#                     # Announce using platform-specific TTS
+#                     logger.info(f"Announcing: {first_object}")
+#                     success = speak_with_audio_device(first_object)
+                    
+#                     if not success:
+#                         logger.warning("Failed to produce audio output. Falling back to alternative method.")
+#                         # One final fallback - try subprocess
+#                         try:
+#                             if sys.platform == 'darwin':
+#                                 import subprocess
+#                                 subprocess.run(["say", first_object])
+#                             elif sys.platform == 'win32':
+#                                 import winsound
+#                                 # Just beep if all else fails
+#                                 winsound.Beep(1000, 500)
+#                         except Exception as fallback_error:
+#                             logger.error(f"Fallback audio method failed: {fallback_error}")
+#                 else:
+#                     logger.debug("No detections found in latest file")
+#             else:
+#                 logger.debug(f"Latest detection file not found: {json_file_path}")
+                
+#         except json.JSONDecodeError:
+#             logger.error(f"Invalid JSON in detection file")
+#         except Exception as e:
+#             logger.error(f"Error in object announcer: {e}")
+        
+#         # Wait for the next interval
+#         time.sleep(announcement_interval)
+    
+#     logger.info("Object announcer thread stopped")
+
+def voice_keyword_announcer_thread(json_dir):
     """
-    Monitors a specific JSON detection file and announces the first detected object
-    through audio output (Bluetooth headphones) every 5 seconds
+    Listens for the keyword "detect" using the Bose microphone, then announces 
+    the first detected object from the latest detection file
     """
     global recognition_active
     
-    logger.info("Object announcer thread started")
+    logger.info("Voice keyword announcer thread started")
     
     # Fixed path to the latest detection file
     json_file_path = os.path.join(json_dir, "latest_detection.json")
     
-    # Time between announcements (5 seconds)
-    announcement_interval = 3.0
+    # Initialize speech recognizer
+    recognizer = sr.Recognizer()
+    recognizer.energy_threshold = 300  # Adjust based on your microphone sensitivity
+    recognizer.dynamic_energy_threshold = True
+    recognizer.pause_threshold = 0.8  # Shorter pause for faster response
     
-    # Function to play audio using platform-specific approaches that work with Bluetooth
+    # Function to play audio announcement
     def speak_with_audio_device(text):
+        text = "There is a " + text + " in front of you"
         logger.info(f"Speaking text: {text}")
         
         # Determine platform
@@ -423,7 +530,6 @@ def object_announcer_thread(json_dir):
         else:  # Linux and others
             try:
                 # Try using espeak with explicit device if alsa is available
-                # First try default device
                 result = os.system(f'espeak -v en-us "{text}" --stdout | aplay')
                 if result != 0:
                     # If that fails, try with explicit device
@@ -433,60 +539,71 @@ def object_announcer_thread(json_dir):
                 logger.error(f"Linux TTS error: {e}")
                 return False
     
-    # Use one-time TTS engine to get system info and test audio
+    # Initial startup announcement
     try:
-        # System startup announcement
-        speak_with_audio_device("Vision assistant started. Audio system active.")
+        speak_with_audio_device("Voice assistant ready. Say detect to hear detected objects.")
     except Exception as e:
         logger.error(f"Initial audio test failed: {e}")
     
-    # Main loop
+    # Main listening loop
     while recognition_active:
         try:
-            # Check if file exists
-            if os.path.exists(json_file_path):
-                # Read the JSON file
-                with open(json_file_path, 'r') as f:
-                    data = json.load(f)
+            # Try to get list of microphone devices to help with debugging
+            try:
+                for index, name in enumerate(sr.Microphone.list_microphone_names()):
+                    logger.info(f"Microphone {index}: {name}")
+            except Exception as mic_error:
+                logger.error(f"Could not list microphones: {mic_error}")
+            
+            # Listen for the keyword using the Bose microphone
+            # Note: You might need to specify the device index that corresponds to your Bose headphones
+            # Use sr.Microphone.list_microphone_names() to find the correct index
+            with sr.Microphone() as source:  # Add device_index=X if needed
+                logger.info("Listening for 'detect' keyword...")
+                recognizer.adjust_for_ambient_noise(source, duration=0.5)
+                audio = recognizer.listen(source, timeout=None, phrase_time_limit=2)
+            
+            try:
+                # Recognize the speech
+                text = recognizer.recognize_google(audio).lower()
+                logger.info(f"Recognized: {text}")
                 
-                # Get detections
-                detections = data.get("detections", [])
-                
-                if detections:
-                    # Get class name of first object
-                    first_object = detections[0].get("class", "unknown")
+                # Check if the keyword "hello" is in the recognized text
+                if "detect" in text:
+                    logger.info("Keyword detected! Announcing object...")
                     
-                    # Announce using platform-specific TTS
-                    logger.info(f"Announcing: {first_object}")
-                    success = speak_with_audio_device(first_object)
-                    
-                    if not success:
-                        logger.warning("Failed to produce audio output. Falling back to alternative method.")
-                        # One final fallback - try subprocess
-                        try:
-                            if sys.platform == 'darwin':
-                                import subprocess
-                                subprocess.run(["say", first_object])
-                            elif sys.platform == 'win32':
-                                import winsound
-                                # Just beep if all else fails
-                                winsound.Beep(1000, 500)
-                        except Exception as fallback_error:
-                            logger.error(f"Fallback audio method failed: {fallback_error}")
-                else:
-                    logger.debug("No detections found in latest file")
-            else:
-                logger.debug(f"Latest detection file not found: {json_file_path}")
+                    # Check if detection file exists
+                    if os.path.exists(json_file_path):
+                        # Read the JSON file
+                        with open(json_file_path, 'r') as f:
+                            data = json.load(f)
+                        
+                        # Get detections
+                        detections = data.get("detections", [])
+                        
+                        if detections:
+                            # Get class name of first object
+                            first_object = detections[0].get("class", "unknown")
+                            
+                            # Announce using platform-specific TTS
+                            logger.info(f"Announcing detected object: {first_object}")
+                            success = speak_with_audio_device(first_object)
+                        else:
+                            speak_with_audio_device("No objects detected")
+                    else:
+                        speak_with_audio_device("No detection data available")
+            
+            except sr.UnknownValueError:
+                # Speech was unintelligible
+                pass
+            except sr.RequestError as e:
+                logger.error(f"Could not request results; {e}")
                 
-        except json.JSONDecodeError:
-            logger.error(f"Invalid JSON in detection file")
         except Exception as e:
-            logger.error(f"Error in object announcer: {e}")
-        
-        # Wait for the next interval
-        time.sleep(announcement_interval)
+            logger.error(f"Error in voice keyword announcer: {e}")
+            time.sleep(1)  # Prevent tight loop on errors
     
-    logger.info("Object announcer thread stopped")
+    logger.info("Voice keyword announcer thread stopped")
 
 # Helper function to generate a scene description using OpenAI or basic logic
 def generate_scene_description(json_dir="detections"):
@@ -689,6 +806,89 @@ def take_api_screenshot():
             'message': 'No frame available for screenshot'
         }), 400
     
+# def main():
+#     """Main function"""
+#     global recognition_active
+    
+#     # Parse command line arguments
+#     parser = argparse.ArgumentParser(description='Vision Assistant with Speech Recognition')
+#     parser.add_argument('--device', type=int, default=0, 
+#                         help='Camera device ID (default: 0)')
+#     parser.add_argument('--json-dir', type=str, default='detections',
+#                         help='Directory containing detection JSON files (default: "detections")')
+#     parser.add_argument('--port', type=int, default=3000,
+#                         help='Port for the web interface (default: 3000)')
+#     parser.add_argument('--audio-device', type=str, default=None,
+#                         help='Specify audio output device for announcements (default: system default)')
+#     parser.add_argument('--announce', action='store_true',
+#                         help='Enable automatic object announcements')
+#     args = parser.parse_args()
+    
+#     try:
+#         # Configure Flask app
+#         app.config['CAMERA_ID'] = 1
+#         app.config['JSON_DIR'] = args.json_dir
+        
+#         # Create necessary directories
+#         os.makedirs("screenshots", exist_ok=True)
+#         os.makedirs(args.json_dir, exist_ok=True)
+        
+#         # Configure audio device if specified
+#         if args.audio_device:
+#             os.environ['AUDIODEV'] = args.audio_device
+#             logger.info(f"Set audio device to: {args.audio_device}")
+            
+#         # Start ZMQ thread to receive frames from detector
+#         zmq_thread = threading.Thread(target=zmq_frame_receiver)
+#         zmq_thread.daemon = True
+#         zmq_thread.start()
+        
+#         # Start the command processor thread
+#         processor_thread = threading.Thread(target=command_processor_thread, args=(args.json_dir,))
+#         processor_thread.daemon = True
+#         processor_thread.start()
+        
+#         # Start object announcer thread if enabled
+#         if args.announce:
+#             announcer_thread = threading.Thread(target=object_announcer_thread, args=(args.json_dir,))
+#             announcer_thread.daemon = True
+#             announcer_thread.start()
+#             logger.info("Object announcement enabled - detected objects will be spoken")
+        
+#         # Welcome message
+#         welcome_msg = "Vision assistant is now running."
+#         print(welcome_msg)
+#         response_queue.put(welcome_msg)
+        
+#         # List audio devices to help with configuration
+#         try:
+#             tts_engine = init_tts()
+#             voices = tts_engine.getProperty('voices')
+#             print("\nAvailable TTS voices:")
+#             for i, voice in enumerate(voices):
+#                 print(f"  {i}: {voice.name} ({voice.id})")
+            
+#             # Try to detect Bluetooth devices
+#             print("\nTo use Bluetooth headphones, run with --audio-device option")
+#             print("or set the appropriate audio device in your system settings")
+#         except Exception as e:
+#             logger.error(f"Error listing audio devices: {e}")
+        
+#         # Start the Flask web server
+#         logger.info(f"Starting web interface on port {args.port}")
+#         print(f"\nOpen your browser and go to: http://localhost:{args.port} to see the interface")
+#         app.run(host='0.0.0.0', port=args.port, debug=False, threaded=True)
+        
+#     except KeyboardInterrupt:
+#         logger.info("Keyboard interrupt received, shutting down...")
+#     except Exception as e:
+#         logger.error(f"Error in main function: {e}")
+#     finally:
+#         # Clean up and exit
+#         recognition_active = False
+#         logger.info("Vision assistant shutdown complete")
+
+
 def main():
     """Main function"""
     global recognition_active
@@ -701,11 +901,21 @@ def main():
                         help='Directory containing detection JSON files (default: "detections")')
     parser.add_argument('--port', type=int, default=3000,
                         help='Port for the web interface (default: 3000)')
-    parser.add_argument('--audio-device', type=str, default=None,
-                        help='Specify audio output device for announcements (default: system default)')
-    parser.add_argument('--announce', action='store_true',
-                        help='Enable automatic object announcements')
+    parser.add_argument('--mic-index', type=int, default=None,
+                        help='Microphone device index for Bose headphones (use -1 to list available devices)')
     args = parser.parse_args()
+    
+    # If requested, list microphone devices and exit
+    if args.mic_index == -1:
+        try:
+            print("Available microphone devices:")
+            for index, name in enumerate(sr.Microphone.list_microphone_names()):
+                print(f"  {index}: {name}")
+            print("\nUse --mic-index NUMBER to select your Bose microphone")
+            return
+        except Exception as e:
+            print(f"Error listing microphones: {e}")
+            return
     
     try:
         # Configure Flask app
@@ -716,11 +926,6 @@ def main():
         os.makedirs("screenshots", exist_ok=True)
         os.makedirs(args.json_dir, exist_ok=True)
         
-        # Configure audio device if specified
-        if args.audio_device:
-            os.environ['AUDIODEV'] = args.audio_device
-            logger.info(f"Set audio device to: {args.audio_device}")
-            
         # Start ZMQ thread to receive frames from detector
         zmq_thread = threading.Thread(target=zmq_frame_receiver)
         zmq_thread.daemon = True
@@ -731,31 +936,16 @@ def main():
         processor_thread.daemon = True
         processor_thread.start()
         
-        # Start object announcer thread if enabled
-        if args.announce:
-            announcer_thread = threading.Thread(target=object_announcer_thread, args=(args.json_dir,))
-            announcer_thread.daemon = True
-            announcer_thread.start()
-            logger.info("Object announcement enabled - detected objects will be spoken")
+        # Start voice keyword announcer thread
+        voice_thread = threading.Thread(target=voice_keyword_announcer_thread, args=(args.json_dir,))
+        voice_thread.daemon = True
+        voice_thread.start()
+        logger.info("Voice keyword announcer started - say 'detect' to hear detected objects")
         
         # Welcome message
         welcome_msg = "Vision assistant is now running."
         print(welcome_msg)
         response_queue.put(welcome_msg)
-        
-        # List audio devices to help with configuration
-        try:
-            tts_engine = init_tts()
-            voices = tts_engine.getProperty('voices')
-            print("\nAvailable TTS voices:")
-            for i, voice in enumerate(voices):
-                print(f"  {i}: {voice.name} ({voice.id})")
-            
-            # Try to detect Bluetooth devices
-            print("\nTo use Bluetooth headphones, run with --audio-device option")
-            print("or set the appropriate audio device in your system settings")
-        except Exception as e:
-            logger.error(f"Error listing audio devices: {e}")
         
         # Start the Flask web server
         logger.info(f"Starting web interface on port {args.port}")
@@ -770,7 +960,6 @@ def main():
         # Clean up and exit
         recognition_active = False
         logger.info("Vision assistant shutdown complete")
-
 
 if __name__ == "__main__":
     main()

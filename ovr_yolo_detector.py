@@ -231,7 +231,7 @@ def main():
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
             
             # Display the frame
-            cv2.imshow("YOLOv8 Object Detection", annotated_frame)
+            #cv2.imshow("YOLOv8 Object Detection", annotated_frame)
             
             # Write frame to output video if saving is enabled
             if args.save and video_writer is not None:
