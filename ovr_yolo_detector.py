@@ -95,7 +95,7 @@ def export_detections_to_json(results, output_dir="detections"):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
-    # Timestamp for unique filename
+    # Timestamp for the data
     timestamp = int(time.time() * 1000)
     
     # Extract detection information
@@ -122,8 +122,8 @@ def export_detections_to_json(results, output_dir="detections"):
         "frame_id": results.path
     }
     
-    # Write to JSON file
-    output_path = os.path.join(output_dir, f"detection_{timestamp}.json")
+    # Always write to the same file - 'latest_detection.json'
+    output_path = os.path.join(output_dir, "latest_detection.json")
     with open(output_path, 'w') as f:
         json.dump(detection_summary, f, indent=2)
     
