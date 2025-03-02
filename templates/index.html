@@ -3,156 +3,289 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vision Assistant</title>
+    <title>bino.dev</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-            color: #333;
+        :root {
+            --primary-color: #0066CC;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --background-light: #FFFFFF;
+            --background-subtle: #F5F5F7;
+            --border-color: #E5E5E5;
+            --success-color: #34C759;
+            --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --border-radius: 12px;
+            --animation-speed: 0.3s;
         }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-light);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
         }
+        
         header {
-            text-align: center;
-            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 16px 0;
         }
+        
+        .logo {
+            width: 50px;
+            height: auto;
+            margin-right: 16px;
+        }
+        
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+        
         h1 {
-            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            margin-bottom: 2px;
+            color: var(--text-primary);
         }
+        
+        header p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+        
+        .commands-bar {
+            display: flex;
+            background-color: var(--background-light);
+            border-radius: var(--border-radius);
+            padding: 12px 20px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .commands-bar h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-right: 16px;
+            padding: 4px 0;
+        }
+        
+        .commands-list {
+            display: flex;
+            list-style-type: none;
+            gap: 20px;
+        }
+        
+        .command-item {
+            display: flex;
+            align-items: center;
+            padding: 4px 0;
+        }
+        
+        .command-name {
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-right: 6px;
+        }
+        
+        .command-description {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        
         .main-content {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 24px;
         }
-        @media (min-width: 768px) {
-            .main-content {
-                flex-direction: row;
-            }
-        }
+        
         .video-container {
-            flex: 2;
-            background-color: #000;
-            border-radius: 8px;
+            background-color: var(--background-subtle);
+            border-radius: var(--border-radius);
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-soft);
+            width: 100%;
+            transition: transform var(--animation-speed);
+            aspect-ratio: 16/9;
         }
+        
         .video-feed {
             width: 100%;
-            height: auto;
+            height: 100%;
             display: block;
+            object-fit: cover;
         }
-        .interaction-panel {
-            flex: 1;
-            background-color: white;
-            border-radius: 8px;
+        
+        .card {
+            background-color: var(--background-light);
+            border-radius: var(--border-radius);
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--border-color);
         }
-        .speech-input, .assistant-response, .detected-objects {
-            margin-bottom: 20px;
+        
+        .card h2 {
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
         }
-        h2 {
-            color: #3498db;
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-        }
-        .input-text, .response-text {
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            padding: 10px;
-            min-height: 60px;
-        }
+        
         .status-indicator {
             display: inline-block;
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background-color: #e74c3c;
-            margin-right: 5px;
+            background-color: var(--text-secondary);
+            margin-right: 8px;
+            transition: background-color 0.3s ease;
         }
+        
         .status-indicator.active {
-            background-color: #2ecc71;
+            background-color: var(--success-color);
         }
+        
+        .content-box {
+            background-color: var(--background-subtle);
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 60px;
+            font-size: 15px;
+        }
+        
+        .objects-container {
+            overflow-x: auto;
+        }
+        
         .object-list {
             list-style-type: none;
             padding: 0;
-        }
-        .object-item {
-            background-color: #f0f8ff;
-            margin-bottom: 5px;
-            padding: 5px 10px;
-            border-radius: 3px;
             display: flex;
-            justify-content: space-between;
+            gap: 12px;
+            min-width: max-content;
         }
+        
+        .object-item {
+            background-color: var(--background-subtle);
+            padding: 10px 16px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 14px;
+            min-width: 120px;
+        }
+        
         .object-class {
-            font-weight: bold;
+            font-weight: 500;
+            margin-bottom: 4px;
         }
+        
         .object-confidence {
-            color: #7f8c8d;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 400;
         }
-        .commands-list {
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            padding: 10px;
-            margin-top: 20px;
+        
+        .speech-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .commands-list h3 {
-            margin-top: 0;
-            font-size: 1rem;
-            color: #2c3e50;
-        }
-        .commands-list ul {
-            padding-left: 20px;
-            margin: 0;
+        
+        .speech-status {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background-color: var(--background-subtle);
+            border-radius: 20px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Vision Assistant</h1>
-            <p>A speech-enabled computer vision assistant</p>
+            <svg class="logo" width="50" height="50" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+                <path d="M100 0h600v800H100V0z" fill="white"/>
+                <path d="M100 0h100v500c0 110-90 200-200 200v-200c55 0 100-45 100-100V0z" fill="#1D1D1F"/>
+                <path d="M700 0h-100v500c0 110 90 200 200 200v-200c-55 0-100-45-100-100V0z" fill="#1D1D1F"/>
+                <ellipse cx="250" cy="400" rx="70" ry="90" fill="#0066CC"/>
+                <ellipse cx="550" cy="400" rx="70" ry="90" fill="#0066CC"/>
+            </svg>
+            <div class="brand-text">
+                <h1>bino.dev</h1>
+                <p>lending you a pair of eyes</p>
+            </div>
         </header>
+
+        <div class="commands-bar">
+            <h3>Voice Commands:</h3>
+            <ul class="commands-list">
+                <li class="command-item">
+                    <span class="command-name">"What is in front of me?"</span>
+                    <span class="command-description">List detected objects</span>
+                </li>
+                <li class="command-item">
+                    <span class="command-name">"Describe my surroundings"</span>
+                    <span class="command-description">Get a detailed description</span>
+                </li>
+                <li class="command-item">
+                    <span class="command-name">"Hello"</span>
+                    <span class="command-description">Greet the assistant</span>
+                </li>
+            </ul>
+        </div>
 
         <div class="main-content">
             <div class="video-container">
                 <img src="{{ url_for('video_feed') }}" class="video-feed" alt="Live Camera Feed">
             </div>
 
-            <div class="interaction-panel">
+            <div class="card">
                 <div class="speech-input">
-                    <h2>
+                    <div class="speech-status">
                         <span class="status-indicator" id="listening-indicator"></span>
-                        Speech Input
-                    </h2>
-                    <div class="input-text" id="speech-text">Listening...</div>
+                        <span>Listening</span>
+                    </div>
+                    <div class="content-box" id="response-text">Say "what is in front of me" or "describe my surroundings"</div>
                 </div>
+            </div>
 
-                <div class="assistant-response">
-                    <h2>Assistant Response</h2>
-                    <div class="response-text" id="response-text">Say "what is in front of me" or "describe my surroundings"</div>
-                </div>
-
-                <div class="detected-objects">
-                    <h2>Detected Objects</h2>
+            <div class="card">
+                <h2>Detected Objects</h2>
+                <div class="objects-container">
                     <ul class="object-list" id="object-list">
-                        <li class="object-item">No objects detected yet</li>
-                    </ul>
-                </div>
-
-                <div class="commands-list">
-                    <h3>Available Commands:</h3>
-                    <ul>
-                        <li><strong>"What is in front of me?"</strong> - List detected objects</li>
-                        <li><strong>"Describe my surroundings"</strong> - Get a detailed description</li>
-                        <li><strong>"Hello"</strong> - Greet the assistant</li>
+                        <li class="object-item">
+                            <span class="object-class">No objects detected yet</span>
+                            <span class="object-confidence"></span>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -161,7 +294,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const speechText = document.getElementById('speech-text');
             const responseText = document.getElementById('response-text');
             const objectList = document.getElementById('object-list');
             const listeningIndicator = document.getElementById('listening-indicator');
@@ -174,14 +306,18 @@
                 fetch('/api/status')
                     .then(response => response.json())
                     .then(data => {
-                        // Update speech text
-                        if (data.transcript) {
-                            speechText.textContent = data.transcript;
-                        }
-                        
                         // Update response text
                         if (data.response) {
                             responseText.textContent = data.response;
+                        }
+                        
+                        // Update transcript if it exists
+                        if (data.transcript) {
+                            // We'll show the transcript in the response area as well
+                            // since we've removed the separate transcript box
+                            if (!data.response) {
+                                responseText.textContent = data.transcript;
+                            }
                         }
                         
                         // Update object list

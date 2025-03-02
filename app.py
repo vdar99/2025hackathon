@@ -21,7 +21,7 @@ import numpy as np
 import speech_recognition as sr
 import pyttsx3
 from flask import Flask, render_template, Response, jsonify
-import openai
+
 
 # Configure logging
 logging.basicConfig(
@@ -41,16 +41,6 @@ recognition_active = True
 openai_enabled = False
 
 # Initialize OpenAI if API key is available
-try:
-    #openai.api_key = os.environ.get("OPENAI_API_KEY")
-    openai.api_key = "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"
-    if openai.api_key:
-        openai_enabled = True
-        logger.info("OpenAI API key found. Description generation enabled.")
-    else:
-        logger.warning("OpenAI API key not found. Description generation disabled.")
-except ImportError:
-    logger.warning("OpenAI module not available. Description generation disabled.")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -91,6 +81,7 @@ def init_tts(preferred_voice=None, device=None):
                 return engine
     
     # Otherwise use default selection logic
+
     for voice in voices:
         # Prefer female voices as they tend to be clearer
         if "female" in voice.name.lower() or "en-us" in voice.id.lower():
@@ -508,8 +499,9 @@ def voice_keyword_announcer_thread(json_dir):
     recognizer.pause_threshold = 0.8  # Shorter pause for faster response
     
     # Function to play audio announcement
-    def speak_with_audio_device(text):
-        text = "There is a " + text + " in front of you"
+    def speak_with_audio_device(text, flag=1):
+        if flag:
+            text = "There is a " + text + " in front of you"
         logger.info(f"Speaking text: {text}")
         
         # Determine platform
@@ -541,7 +533,7 @@ def voice_keyword_announcer_thread(json_dir):
     
     # Initial startup announcement
     try:
-        speak_with_audio_device("Voice assistant ready. Say detect to hear detected objects.")
+        speak_with_audio_device("Hi! Welcome to Bye no. Say detect to hear what's ahead.",0)
     except Exception as e:
         logger.error(f"Initial audio test failed: {e}")
     
@@ -569,7 +561,7 @@ def voice_keyword_announcer_thread(json_dir):
                 logger.info(f"Recognized: {text}")
                 
                 # Check if the keyword "hello" is in the recognized text
-                if "detect" or "deetect" or "dehtect" in text:
+                if ("detect" in text) or ("deetect" in text) or ("dehte" in text):
                     logger.info("Keyword detected! Announcing object...")
                     
                     # Check if detection file exists
