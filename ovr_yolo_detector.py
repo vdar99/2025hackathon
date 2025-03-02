@@ -181,14 +181,14 @@ def main():
         os.makedirs(args.json_dir)
         print(f"Created directory for JSON exports: {args.json_dir}")
     
-    # Variables for interval-based JSON export
+    # Set target frame rate for JSON exports to 30 frames per second
+    target_export_fps = 30
+    frame_interval = 1.0 / target_export_fps  # Time between frames in seconds
     last_export_time = 0
-    export_interval = args.interval  # Time between exports in seconds
     
-    print(f"JSON export interval: {export_interval} seconds to {args.json_dir}/")
+    print(f"JSON export rate: {target_export_fps} frames per second to {args.json_dir}/")
     
     # Main processing loop
-    # Modify the main loop to send frames without the delay
     try:
         context = zmq.Context()
         socket = context.socket(zmq.PUB)
@@ -206,32 +206,46 @@ def main():
             results = process_frame(frame, model, args.conf)
             process_time = (time.time() - start_time) * 1000
             
-            # Determine if we should export this frame based on the time interval
+            # Get current time
             current_time = time.time()
-            should_export = (current_time - last_export_time) >= export_interval
             
-            # Export detections to JSON if it's time and there are detections
-            if should_export and len(results.boxes) > 0:
-                json_path = export_detections_to_json(results, args.json_dir)
+            # Determine if we should export this frame based on the target frame rate
+            should_export = (current_time - last_export_time) >= frame_interval
+            
+            # Export detections to JSON at the target frame rate (30 fps)
+            if should_export:
+                if len(results.boxes) > 0:
+                    json_path = export_detections_to_json(results, args.json_dir)
+                    print(f"Exported detections to {json_path}")
+                else:
+                    # Still write an empty detection file to maintain the frame rate
+                    timestamp = int(current_time * 1000)
+                    detection_summary = {
+                        "timestamp": timestamp,
+                        "detections": [],
+                        "total_objects": 0,
+                        "frame_id": "empty_frame"
+                    }
+                    output_path = os.path.join(args.json_dir, "latest_detection.json")
+                    with open(output_path, 'w') as f:
+                        json.dump(detection_summary, f, indent=2)
+                
+                # Update last export time
                 last_export_time = current_time
-                print(f"Exported detections to {json_path}")
             
             # Draw detections on frame
             annotated_frame = draw_detections(frame, results)
             
-            # Send the annotated frame through ZeroMQ (no need to wait a second)
+            # Send the annotated frame through ZeroMQ
             _, buffer = cv2.imencode('.jpg', annotated_frame)
             jpg_as_text = base64.b64encode(buffer).decode('utf-8')
             socket.send_string(jpg_as_text)
             
             # Add performance info and export status
-            time_until_next = max(0, export_interval - (current_time - last_export_time))
-            status_text = f"Inference: {process_time:.1f}ms | Next export in: {time_until_next:.1f}s"
+            time_until_next = max(0, frame_interval - (time.time() - last_export_time))
+            status_text = f"Inference: {process_time:.1f}ms | Next export in: {time_until_next:.3f}s | Export rate: 30 fps"
             cv2.putText(annotated_frame, status_text, (10, frame_height - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-            
-            # Display the frame
-            #cv2.imshow("YOLOv8 Object Detection", annotated_frame)
             
             # Write frame to output video if saving is enabled
             if args.save and video_writer is not None:
