@@ -1,18 +1,6 @@
 {
-  "timestamp": 1740900766483,
-  "detections": [
-    {
-      "class": "bed",
-      "confidence": 0.41898301243782043,
-      "bbox": [
-        104.2635498046875,
-        134.93060302734375,
-        1247.2178955078125,
-        708.6029663085938
-      ],
-      "timestamp": 1740900766483
-    }
-  ],
-  "total_objects": 1,
-  "frame_id": "image0.jpg"
+  "timestamp": 1740901876490,
+  "detections": [],
+  "total_objects": 0,
+  "frame_id": "empty_frame"
 }

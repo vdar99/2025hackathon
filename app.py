@@ -569,7 +569,7 @@ def voice_keyword_announcer_thread(json_dir):
                 logger.info(f"Recognized: {text}")
                 
                 # Check if the keyword "hello" is in the recognized text
-                if "detect" in text:
+                if "detect" or "deetect" or "dehtect" in text:
                     logger.info("Keyword detected! Announcing object...")
                     
                     # Check if detection file exists
